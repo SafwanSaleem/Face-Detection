@@ -1,0 +1,47 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="293dp"
+        android:layout_height="191dp"
+        app:srcCompat="@drawable/download" />
+
+    <TextView
+        android:id="@+id/resultText"
+        android:layout_width="297dp"
+        android:layout_height="226dp"
+        android:layout_marginTop="16dp"
+        android:text="Face Detection Results"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/detectButton"
+        android:layout_width="319dp"
+        android:layout_height="77dp"
+        android:text="Detect Faces" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="321dp"
+        android:layout_height="wrap_content"
+        android:text="Save Face" />
+
+    <Button
+        android:id="@+id/cameraButton"
+        android:layout_width="317dp"
+        android:layout_height="wrap_content"
+        android:text="Take Photo with Camera" />
+
+    <Button
+        android:id="@+id/galleryButton"
+        android:layout_width="319dp"
+        android:layout_height="wrap_content"
+        android:text="Open Gallery" />
+
+</LinearLayout>
