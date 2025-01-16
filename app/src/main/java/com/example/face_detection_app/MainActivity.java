@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -135,31 +137,42 @@ public class MainActivity extends AppCompatActivity {
 
         // Process the image
         detector.process(inputImage)
-                .addOnSuccessListener(new OnSuccessListener<List<Face>>() {
-                    @Override
-                    public void onSuccess(List<Face> faces) {
-                        if (faces.isEmpty()) {
-                            resultText.setText("No faces detected.");
-                        } else {
-                            StringBuilder resultBuilder = new StringBuilder();
-                            for (int i = 0; i < faces.size(); i++) {
-                                Face face = faces.get(i);
-                                float smileProbability = face.getSmilingProbability();
-                                if (smileProbability > 0) {
-                                    resultBuilder.append("Face ").append(i + 1).append(" Smile: ")
-                                            .append(smileProbability * 100).append("%\n");
-                                }
+                .addOnSuccessListener(faces -> {
+                    if (faces.isEmpty()) {
+                        resultText.setText("No faces detected.");
+                    } else {
+                        StringBuilder resultBuilder = new StringBuilder();
+                        Bitmap mutableImage = image.copy(Bitmap.Config.ARGB_8888, true); // Make the image mutable
+
+                        Canvas canvas = new Canvas(mutableImage);
+                        Paint paint = new Paint();
+                        paint.setColor(Color.RED); // Set the color for the face boxes
+                        paint.setStyle(Paint.Style.STROKE); // Set the style to draw only the border
+                        paint.setStrokeWidth(5); // Set the stroke width for the border
+
+                        for (int i = 0; i < faces.size(); i++) {
+                            Face face = faces.get(i);
+
+                            // Get the bounding box for each face
+                            Rect bounds = face.getBoundingBox();
+                            canvas.drawRect(bounds, paint); // Draw the rectangle on the canvas
+
+                            // Optionally, add more information like smile probability to the result
+                            float smileProbability = face.getSmilingProbability();
+                            if (smileProbability > 0) {
+                                resultBuilder.append("Face ").append(i + 1).append(" Smile: ")
+                                        .append(smileProbability * 100).append("%\n");
                             }
-                            resultText.setText(resultBuilder.toString());
                         }
+
+                        // Set the updated image with bounding boxes
+                        imageView.setImageBitmap(mutableImage);
+
+                        // Display the results
+                        resultText.setText(resultBuilder.toString());
                     }
                 })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(MainActivity.this, "Face detection failed.", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                .addOnFailureListener(e -> Toast.makeText(MainActivity.this, "Face detection failed.", Toast.LENGTH_SHORT).show());
     }
 
     private void saveFaces() {
