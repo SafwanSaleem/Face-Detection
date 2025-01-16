@@ -4,10 +4,12 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.Base64;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -87,15 +89,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void pickImageFromGallery() {
-        // Check for storage permission
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_REQUEST_CODE);
-        } else {
-            // Open the gallery
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            startActivityForResult(intent, PICK_IMAGE_REQUEST);
-        }
+        // Open the gallery
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
 
     @Override
@@ -142,14 +138,28 @@ public class MainActivity extends AppCompatActivity {
                             resultText.setText("No faces detected.");
                         } else {
                             StringBuilder resultBuilder = new StringBuilder();
+                            Bitmap mutableBitmap = image.copy(Bitmap.Config.ARGB_8888, true);
+                            Canvas canvas = new Canvas(mutableBitmap);
+                            Paint paint = new Paint();
+                            paint.setColor(Color.RED);
+                            paint.setStrokeWidth(5);
+                            paint.setStyle(Paint.Style.STROKE);
+
                             for (int i = 0; i < faces.size(); i++) {
                                 Face face = faces.get(i);
+                                Rect bounds = face.getBoundingBox();
+                                canvas.drawRect(bounds, paint); // Draw red bounding box
+
+                                // Optionally, add smile probability or other info to the result
                                 float smileProbability = face.getSmilingProbability();
                                 if (smileProbability > 0) {
                                     resultBuilder.append("Face ").append(i + 1).append(" Smile: ")
                                             .append(smileProbability * 100).append("%\n");
                                 }
                             }
+
+                            // Set the image with bounding boxes
+                            imageView.setImageBitmap(mutableBitmap);
                             resultText.setText(resultBuilder.toString());
                         }
                     }
